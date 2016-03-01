@@ -25,7 +25,7 @@ typedef struct { // Python object for matrix
 // Might expand this to handle kwargs, etc.
 static PyObject *RGBmatrix_new(
   PyTypeObject *type, PyObject *arg, PyObject *kw) {
-        RGBmatrixObject *self = NULL;
+	RGBmatrixObject *self = NULL;
 	int              rows, chain;
 
 	if((PyTuple_Size(arg) == 2) &&
@@ -52,12 +52,12 @@ static void RGBmatrix_dealloc(RGBmatrixObject *self) {
 static PyObject *Clear(RGBmatrixObject *self) {
 	self->matrix->Clear();
 
-        Py_INCREF(Py_None);
-        return Py_None;
+	Py_INCREF(Py_None);
+	return Py_None;
 }
 
 static PyObject *Fill(RGBmatrixObject *self, PyObject *arg) {
-        uint32_t c;
+	uint32_t c;
 	uint8_t  r, g, b;
 	int      status=0;
 
@@ -76,12 +76,12 @@ static PyObject *Fill(RGBmatrixObject *self, PyObject *arg) {
 
 	if(status) self->matrix->Fill(r, g, b);
 
-        Py_INCREF(Py_None);
-        return Py_None;
+	Py_INCREF(Py_None);
+	return Py_None;
 }
 
 static PyObject *SetPixel(RGBmatrixObject *self, PyObject *arg) {
-        uint32_t x, y, c;
+	uint32_t x, y, c;
 	uint8_t  r, g, b;
 	int      status=0;
 
@@ -100,27 +100,26 @@ static PyObject *SetPixel(RGBmatrixObject *self, PyObject *arg) {
 
 	if(status) self->matrix->SetPixel(x, y, r, g, b);
 
-        Py_INCREF(Py_None);
-        return Py_None;
+	Py_INCREF(Py_None);
+	return Py_None;
 }
 
 // Copy whole display buffer to display from a list of bytes [R1,G1,B1,R2,G2,B2...]
 static PyObject *SetBuffer(RGBmatrixObject *self, PyObject *data) 
 {
-	//PyListObject* data = (PyListObject*)arg;
-    Py_ssize_t count;
-    int      w, h, offset, y, x;
-    uint8_t  r, g, b;
+	Py_ssize_t count;
+	int        w, h, offset, y, x;
+	uint8_t    r, g, b;
 
-    //status = PyArg_ParseTuple(args, "O", &data)
-    count = PyList_Size(data);
+	count = PyList_Size(data);
 
-    w = self->matrix->width();  // Matrix dimensions
+	w = self->matrix->width();  // Matrix dimensions
 	h = self->matrix->height();
 	if(count != w*h*3)
 	{
-    	PyErr_SetString(PyExc_ValueError, "Data buffer incorrect size.");
-    	return NULL;
+		PyErr_SetString(PyExc_ValueError,
+		  "Data buffer incorrect size.");
+		return NULL;
 	}
 
 	for(y=0; y<h; y++) 
@@ -235,17 +234,29 @@ static PyObject *SetPWMBits(RGBmatrixObject *self, PyObject *arg) {
 		self->matrix->SetPWMBits(b);
 	}
 
-        Py_INCREF(Py_None);
-        return Py_None;
+	Py_INCREF(Py_None);
+	return Py_None;
+}
+
+static PyObject *SetWriteCycles(RGBmatrixObject *self, PyObject *arg) {
+	uint8_t b;
+
+	if((PyTuple_Size(arg) == 1) && PyArg_ParseTuple(arg, "B", &b)) {
+		io.writeCycles = b;
+	}
+
+	Py_INCREF(Py_None);
+	return Py_None;
 }
 
 static PyMethodDef methods[] = {
-  { "Clear"     , (PyCFunction)Clear     , METH_NOARGS , NULL },
-  { "Fill"      , (PyCFunction)Fill      , METH_VARARGS, NULL },
-  { "SetBuffer" , (PyCFunction)SetBuffer , METH_O,       NULL },
-  { "SetPixel"  , (PyCFunction)SetPixel  , METH_VARARGS, NULL },
-  { "SetImage"  , (PyCFunction)SetImage  , METH_VARARGS, NULL },
-  { "SetPWMBits", (PyCFunction)SetPWMBits, METH_VARARGS, NULL },
+  { "Clear"         , (PyCFunction)Clear         , METH_NOARGS , NULL },
+  { "Fill"          , (PyCFunction)Fill          , METH_VARARGS, NULL },
+  { "SetBuffer"     , (PyCFunction)SetBuffer     , METH_O,       NULL },
+  { "SetPixel"      , (PyCFunction)SetPixel      , METH_VARARGS, NULL },
+  { "SetImage"      , (PyCFunction)SetImage      , METH_VARARGS, NULL },
+  { "SetPWMBits"    , (PyCFunction)SetPWMBits    , METH_VARARGS, NULL },
+  { "SetWriteCycles", (PyCFunction)SetWriteCycles, METH_VARARGS, NULL },
   { NULL, NULL, 0, NULL }
 };
 
@@ -293,13 +304,13 @@ static PyTypeObject RGBmatrixObjectType = {
 };
 
 PyMODINIT_FUNC initrgbmatrix(void) { // Module initialization function
-        PyObject* m;
+	PyObject* m;
 
 	if(io.Init() &&    // Set up GPIO pins.  MUST run as root.
-          (m = Py_InitModule("rgbmatrix", methods)) &&
-          (PyType_Ready(&RGBmatrixObjectType) >= 0)) {
-                Py_INCREF(&RGBmatrixObjectType);
-                PyModule_AddObject(m, "Adafruit_RGBmatrix",
-                  (PyObject *)&RGBmatrixObjectType);
-        }
+	  (m = Py_InitModule("rgbmatrix", methods)) &&
+	  (PyType_Ready(&RGBmatrixObjectType) >= 0)) {
+		Py_INCREF(&RGBmatrixObjectType);
+		PyModule_AddObject(m, "Adafruit_RGBmatrix",
+		  (PyObject *)&RGBmatrixObjectType);
+	}
 }
