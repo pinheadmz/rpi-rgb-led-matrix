@@ -151,9 +151,11 @@ bool GPIO::Init() {
     freeRunTimer = &((volatile uint32_t *)timer_map)[1];
     // Okay then, getting back to GPIO...
 
-    gpio_base = 0x3F000000 + 0x200000; // GPIO base addr for Pi 2
+    gpio_base   = 0x3F000000 + 0x200000; // GPIO base addr for Pi 2
+    writeCycles = 2;
   } else {
-    gpio_base = 0x20000000 + 0x200000; // " for Pi 1
+    gpio_base   = 0x20000000 + 0x200000; // " for Pi 1
+    writeCycles = 1;
   }
 
   if ((mem_fd = open("/dev/mem", O_RDWR|O_SYNC) ) < 0) {

@@ -838,7 +838,8 @@ static int usage(const char *progname) {
           "\t                /etc/init.d, but also when running without\n"
           "\t                terminal (e.g. cron).\n"
           "\t-t <seconds>  : Run for these number of seconds, then exit.\n"
-          "\t       (if neither -d nor -t are supplied, waits for <RETURN>)\n");
+          "\t       (if neither -d nor -t are supplied, waits for <RETURN>)\n"
+          "\t-w <count>    : Wait states (to throttle I/O speed)\n");
   fprintf(stderr, "Demos, choosen with -D\n");
   fprintf(stderr, "\t0  - some rotating square\n"
           "\t1  - forward scrolling an image (-m <scroll-ms>)\n"
@@ -865,11 +866,12 @@ int main(int argc, char *argv[]) {
   int pwm_bits = -1;
   bool large_display = false;
   bool do_luminance_correct = true;
+  uint8_t w = 0; // Use default # of write cycles
 
   const char *demo_parameter = NULL;
 
   int opt;
-  while ((opt = getopt(argc, argv, "dlD:t:r:p:c:m:L")) != -1) {
+  while ((opt = getopt(argc, argv, "dlD:t:r:p:c:m:w:L")) != -1) {
     switch (opt) {
     case 'D':
       demo = atoi(optarg);
@@ -910,6 +912,10 @@ int main(int argc, char *argv[]) {
       large_display = true;
       break;
 
+    case 'w':
+      w = atoi(optarg);
+      break;
+
     default: /* '?' */
       return usage(argv[0]);
     }
@@ -947,6 +953,7 @@ int main(int argc, char *argv[]) {
   GPIO io;
   if (!io.Init())
     return 1;
+  if(w) io.writeCycles = w;
 
   // Start daemon before we start any threads.
   if (as_daemon) {
