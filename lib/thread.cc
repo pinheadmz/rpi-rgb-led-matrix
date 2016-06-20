@@ -44,11 +44,15 @@ void Thread::Start(int priority) {
   assert(!started_);
   pthread_create(&thread_, NULL, &PthreadCallRun, this);
 
+// prevent LED driver from real-time priority because it disrupts bitcoin-rpc functions
+// see https://raspberrypi.stackexchange.com/questions/42474/driving-32x32-led-grid-via-gpio-preventing-other-processes-from-running/42480
+/*
   if (priority > 0) {
     struct sched_param p;
     p.sched_priority = priority;
     pthread_setschedparam(thread_, SCHED_FIFO, &p);
   }
+*/
 
   started_ = true;
 }
